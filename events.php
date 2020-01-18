@@ -10,20 +10,19 @@ function events_civicrm_buildForm($formName, &$form) {
     CRM_Core_Resources::singleton()->addScriptFile('org.bemas.events', 'js/bemaseventregistration.js');
 
     if ($form->getAction() == CRM_Core_Action::ADD) {
+      $defaults = [];
+
       /*
        * set the preferred language default value to the CMS language
        */
       if ($language->language == 'en') {
         $defaults['preferred_language'] = 'en_US';
-        $form->setDefaults($defaults);
       }
       elseif ($language->language == 'nl') {
         $defaults['preferred_language'] = 'nl_NL';
-        $form->setDefaults($defaults);
       }
       elseif ($language->language == 'fr') {
         $defaults['preferred_language'] = 'fr_FR';
-        $form->setDefaults($defaults);
       }
 
       // see if we have the contact id and checksum in the URL
@@ -51,6 +50,11 @@ function events_civicrm_buildForm($formName, &$form) {
             $defaults['custom_94'] = CRM_Events_BemasParticipant::getVat($employerID);
           }
         }
+      }
+
+      // set the defaults
+      if (count($defaults) > 0) {
+        $form->setDefaults($defaults);
       }
     }
   }
