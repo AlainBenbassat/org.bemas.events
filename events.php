@@ -33,25 +33,22 @@ function events_civicrm_buildForm($formName, &$form) {
         $isValidUser = CRM_Contact_BAO_Contact_Utils::validChecksum($cid, $cs);
         if ($isValidUser) {
           // get the current employer and billing details
-          $contact = civicrm_api3('Contact', 'get', [
-            'sequential' => 1,
-            'id' => $cid,
-          ]);
-          if ($contact['count'] == 1 && $contact['values'][0]['employer_id']) {
+          $employerID = CRM_Core_DAO::singleValueQuery("select employer_id from civicrm_contact where id = $cid and is_deleted = 0");
+          if ($employerID) {
             // fill in the billing or main address
-            $addr = CRM_Events_BemasParticipant::getAddress($contact['values'][0]['employer_id'], 'billing');
+            $addr = CRM_Events_BemasParticipant::getAddress($employerID, 'billing');
             if ($addr) {
               $defaults['custom_95'] = $addr;
             }
             else {
-              $addr = CRM_Events_BemasParticipant::getAddress($contact['values'][0]['employer_id'], 'main');
+              $addr = CRM_Events_BemasParticipant::getAddress($employerID, 'main');
               if ($addr) {
                 $defaults['custom_95'] = $addr;
               }
             }
 
             // fill in VAT
-            $defaults['custom_94'] = CRM_Events_BemasParticipant::getVat($contact['values'][0]['employer_id']);
+            $defaults['custom_94'] = CRM_Events_BemasParticipant::getVat($employerID);
           }
         }
       }
