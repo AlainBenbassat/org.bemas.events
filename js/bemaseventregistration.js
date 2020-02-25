@@ -39,6 +39,7 @@ CRM.$(function($) {
 
         }
         else {
+          console.log(result.error_message);
           $("#current_employer").val("");
         }
       }, function(error) {
