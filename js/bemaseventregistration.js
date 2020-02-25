@@ -13,9 +13,12 @@ CRM.$(function($) {
       }).then(function(result) {
         if (result.is_error == 0) {
           var contact = result.values[0];
-//console.log(contact);
+
           // fill in the org. name
           $("#current_employer").val(contact.organization_name);
+
+          // add the name to eu.tttp.publicautocomplete
+          publicautocomplete.matchedValues[contact.organization_name] = true;
 
           // fill in the billing or main address
           if (String.prototype.trim($("#custom_95").val()) == "") {
@@ -36,7 +39,6 @@ CRM.$(function($) {
 
         }
         else {
-//console.log(result.error_message);
           $("#current_employer").val("");
         }
       }, function(error) {
