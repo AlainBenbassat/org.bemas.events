@@ -37,9 +37,19 @@ CRM.$(function($) {
             }
           }
 
+          // select the first price set if the contact is a member
+          if (contact.membership_count > 0) {
+            $("div.Deelname-row1 span input").prop('checked', true);
+          }
+          else {
+            // not a member, check the second price
+            $("div.Deelname-row2 span input").prop('checked', true);
+          }
+
         }
         else {
           console.log(result.error_message);
+          $("div.Deelname-row2 span input").prop('checked', true);
           $("#current_employer").val("");
         }
       }, function(error) {
