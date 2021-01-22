@@ -10,12 +10,13 @@ class CRM_Events_Survey {
     $templateType = $this->getTemplateTypeFromEventType($event['event_type_id']);
 
     if ($templateType) {
-      $template = new CRM_Events_WebformTemplate();
-      $template->eventId = $eventId;
-      $template->templateType = $templateType;
-      $template->language = $this->getEventLanguage($event['title']);
-      $template->speakers = $this->getEventSpeakers($eventId);
-      $template->create();
+      $eventSurvey = new CRM_Events_DrupalWebform();
+      $eventSurvey->eventId = $eventId;
+      $eventSurvey->eventTitle = $event['title'];
+      $eventSurvey->templateType = $templateType;
+      $eventSurvey->language = $this->getEventLanguage($event['title']);
+      $eventSurvey->speakers = $this->getEventSpeakers($eventId);
+      $eventSurvey->create();
     }
   }
 
@@ -70,6 +71,28 @@ class CRM_Events_Survey {
   }
 
   private function getEventSpeakers($eventId) {
-    return [1 => 'TODO', 2 => 'Jos Peeters', 3 => 'Wendy Willems'];
+    $speakers = [];
+
+    $sql = "
+      select
+        c.id
+        , concat(c.first_name, ' ', c.last_name) speaker
+      from
+        civicrm_event e
+      inner join
+        civicrm_participant p on e.id = p.event_id
+      inner join
+        civicrm_contact c on c.id = p.contact_id
+      where
+        e.id = $eventId
+      and
+        p.role_id in (4, 6)
+    ";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    while ($dao->fetch()) {
+      $speakers[$dao->id] = $dao->speaker;
+    }
+
+    return $speakers;
   }
 }
