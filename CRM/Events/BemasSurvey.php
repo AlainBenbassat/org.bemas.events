@@ -37,8 +37,8 @@ class CRM_Events_BemasSurvey {
   }
 
   private function getEventLanguage($eventCode) {
-    $lastLetter = substr($eventCode, )
-
+    $lastLetter = substr($eventCode, -1);
+    return $lastLetter;
   }
 
   private function cloneSurvey($surveyType) {
