@@ -17,9 +17,6 @@ class CRM_Events_DrupalWebform {
     $this->wipeNodeFields($eventSurvey);
     $this->setNewNodeValues($eventSurvey);
     $nid = $this->saveNode($eventSurvey, $nodeTemplate);
-
-
-    var_dump($nid);
   }
 
   private function hasEventSurvey() {

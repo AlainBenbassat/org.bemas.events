@@ -11,24 +11,24 @@ class CRM_Events_BemasSurvey {
   }
 
   public function createForEvent($eventId) {
-    $event = civicrm_api3('Event', 'getsingle', ['event_id' => $eventId]);
-
+    $event = $this->getEvent($eventId);
     $surveyType = $this->getSurveyTypeFromEventType($event['event_type_id']);
+
     if ($surveyType) {
-      $this->createSurveyWebformForEvent($surveyType, $event);
+      $eventCode = $this->getEventCode($event['title']);
+
+      $eventSurvey = new CRM_Events_DrupalWebform();
+      $eventSurvey->eventId = $eventId;
+      $eventSurvey->eventTitle = $event['title'];
+      $eventSurvey->templateType = $surveyType;
+      $eventSurvey->language = $this->getEventLanguage($eventCode);
+      $eventSurvey->speakers = $this->getEventSpeakers($eventId);
+      $eventSurvey->create();
     }
   }
 
-  private function createSurveyWebformForEvent($surveyType, $event) {
-    $eventCode = $this->getEventCode($event['title']);
-    $eventLanguage = $this->getEventLanguage($eventCode);
-    $node = $this->cloneSurvey($surveyType);
-
-    $node->title = $event['title' . $this->getEventLanguage()];
-  }
-
   private function getEventCode($title) {
-    $n = strstr($title, ' - ');
+    $n = strpos($title, ' - ');
     if ($n === FALSE) {
       throw new Exception("Cannot extract event code from event: $title");
     }
@@ -38,43 +38,30 @@ class CRM_Events_BemasSurvey {
 
   private function getEventLanguage($eventCode) {
     $lastLetter = substr($eventCode, -1);
-    return $lastLetter;
-  }
 
-  private function cloneSurvey($surveyType) {
-    // get the template
-    $webformNode = $this->loadDrupalWebformByTitle('TEMPLATE ' . $surveyType);
-
-    // blank out some fields
-    $webformNode->nid = NULL;
-    $webformNode->vid = NULL;
-    $webformNode->tnid = NULL;
-    $webformNode->log = NULL;
-    $webformNode->uuid = NULL;
-    $webformNode->vuuid = NULL;
-    $webformNode->created = NULL;
-
-    node_save($webformNode);
-  }
-
-  private function loadDrupalWebformByTitle($title) {
-    $query = new EntityFieldQuery();
-
-    $entities = $query->entityCondition('entity_type', 'node')
-      ->propertyCondition('type', 'webform')
-      ->propertyCondition('title', $title)
-      ->propertyCondition('status', 1)
-      ->range(0,1)
-      ->execute();
-
-    if (empty($entities['node'])) {
-      throw new Exception("Cannot find webform with title: $title");
+    if ($lastLetter == 'V') {
+      return 'NL';
     }
 
-    $arr = array_keys($entities['node']);
-    $node = node_load(array_shift($arr));
+    if ($lastLetter == 'W') {
+      return 'FR';
+    }
 
-    return $node;
+    if ($lastLetter == 'N') {
+      return 'EN';
+    }
+
+    throw new Exception("Cannot extract the language from event code: $eventCode");
+  }
+
+  private function getEvent($eventId) {
+    $params = [
+      'id' => $eventId,
+      'sequential' => 1,
+    ];
+    $event = civicrm_api3('Event', 'getsingle', $params);
+
+    return $event;
   }
 
   private function getSurveyTypeFromEventType($eventTypeId) {
@@ -97,8 +84,34 @@ class CRM_Events_BemasSurvey {
     }
   }
 
-  private function getUpcomingEvents() {
+  private function getEventSpeakers($eventId) {
+    $speakers = [];
 
+    $sql = "
+      select
+        c.id
+        , concat(c.first_name, ' ', c.last_name) speaker
+      from
+        civicrm_event e
+      inner join
+        civicrm_participant p on e.id = p.event_id
+      inner join
+        civicrm_contact c on c.id = p.contact_id
+      where
+        e.id = $eventId
+      and
+        p.role_id in (4, 6)
+    ";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    while ($dao->fetch()) {
+      $speakers[$dao->id] = $dao->speaker;
+    }
+
+    return $speakers;
+  }
+
+  private function getUpcomingEvents() {
+    throw new Exception("TODO getUpcomingEvents()");
   }
 
 }
