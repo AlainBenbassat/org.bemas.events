@@ -38,13 +38,13 @@ class CRM_Events_DrupalWebform {
   }
 
   private function getEventFormKey() {
-    $formKey = 'evalform_' . strtolower($this->templateType) . '_event_id_' . $this->eventId;
+    $formKey = 'evalform_event_id_' . $this->eventId;
 
     return $formKey;
   }
 
   private function getSpeakerFormKey($contactId) {
-    $formKey = 'evalform_' . strtolower($this->templateType) . '_speaker_id_' . $contactId;
+    $formKey = 'evalform_speaker_id_' . $contactId;
 
     return $formKey;
   }
