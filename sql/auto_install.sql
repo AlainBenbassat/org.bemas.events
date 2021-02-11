@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS `civicrm_bemas_eval_participant_trainer` (
     `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
     `nid` int(10) unsigned NOT NULL,
     `sid` int(10) unsigned NOT NULL,
+    `contact_id` int(10) unsigned NOT NULL,
     `event_id` int(10) unsigned NOT NULL,
     `template` char(1) NOT NULL,
     `expertise` int(10) unsigned NULL,

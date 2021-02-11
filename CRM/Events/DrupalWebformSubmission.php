@@ -2,11 +2,14 @@
 
 class CRM_Events_DrupalWebformSubmission {
   public static function process($nodeId, $submissionId, $data) {
-    self::saveEventEvaluation($nodeId, $submissionId, $data);
-    self::saveTrainerEvaluation($nodeId, $submissionId, $data);
+    // TODO we can test on template type via $data['evalform_type'][0] later
+    // there will be templates a, b, c, l1...
+
+    self::saveParticipantEventEvaluation($nodeId, $submissionId, $data);
+    self::saveParticipantTrainerEvaluation($nodeId, $submissionId, $data);
   }
 
-  private static function saveEventEvaluation($nodeId, $submissionId, $data) {
+  private static function saveParticipantEventEvaluation($nodeId, $submissionId, $data) {
     $sqlParams = [];
     $columns = [
       1 => 'nid',
@@ -31,22 +34,55 @@ class CRM_Events_DrupalWebformSubmission {
       $columnList[] = $columnName;
       $columnIndexList[] = "%$columnIndex";
 
-      list($columnValue, $columnType) = self::getAnswerValueAndTypeFromSubmission($columnName, $nodeId, $submissionId, $data);
+      [$columnValue, $columnType] = self::getAnswerValueAndTypeFromSubmission($columnName, $nodeId, $submissionId, $data);
       $sqlParams[$columnIndex] = [$columnValue, $columnType];
     }
 
     $sql = sprintf("insert into civicrm_bemas_eval_participant_event (%s) values (%s)", implode(', ', $columnList), implode(', ', $columnIndexList));
-    watchdog('alain', $sql);
-    watchdog('alain', print_r($sqlParams, TRUE));
+
     CRM_Core_DAO::executeQuery($sql, $sqlParams);
   }
 
-  private static function saveTrainerEvaluation($nodeId, $submissionId, $data) {
+  private static function saveParticipantTrainerEvaluation($nodeId, $submissionId, $data) {
+    $speakerFormKeyList = self::getFormKeysStartingWith($data, 'evalform_speaker_id_');
+    foreach ($speakerFormKeyList as $speakerFormKey) {
+      $sqlParams = [];
+      $sql = "
+        insert into
+          civicrm_bemas_eval_participant_trainer
+        (
+          nid, sid, contact_id, event_id, template, expertise, didactische_vaardigheden
+        )
+        values
+        (
+          %1, %2, %3, %4, %5, %6, %7
+        )
+      ";
+      $sqlParams[1] = self::getAnswerValueAndTypeFromSubmission('nid', $nodeId, $submissionId, $data);
+      $sqlParams[2] = self::getAnswerValueAndTypeFromSubmission('sid', $nodeId, $submissionId, $data);
+      $sqlParams[3] = [self::extractIdFromFormKey($speakerFormKey, 'evalform_speaker_id_'), 'Integer'];
+      $sqlParams[4] = self::getAnswerValueAndTypeFromSubmission('event_id', $nodeId, $submissionId, $data);
+      $sqlParams[5] = self::getAnswerValueAndTypeFromSubmission('template', $nodeId, $submissionId, $data);
 
+      if ($data[$speakerFormKey]['a'] == 'x') {
+        $sqlParams[6] = ['', 'Timestamp']; // dirty hack for inserting NULL
+      }
+      else {
+        $sqlParams[6] = [$data[$speakerFormKey]['a'], 'Integer'];
+      }
+
+      if ($data[$speakerFormKey]['b'] == 'x') {
+        $sqlParams[7] = ['', 'Timestamp']; // dirty hack for inserting NULL
+      }
+      else {
+        $sqlParams[7] = [$data[$speakerFormKey]['b'], 'Integer'];
+      }
+
+      CRM_Core_DAO::executeQuery($sql, $sqlParams);
+    }
   }
 
   private static function getAnswerValueAndTypeFromSubmission($columnName, $nodeId, $submissionId, $data) {
-    // TODO here we can differentiate according to the templete type
     if ($columnName == 'nid') {
       $value = $nodeId;
       $type = 'Integer';
@@ -56,7 +92,8 @@ class CRM_Events_DrupalWebformSubmission {
       $type = 'Integer';
     }
     elseif ($columnName == 'event_id') {
-      $value = self::extractIdFromFormKey($data, 'evalform_event_id_');
+      $formKeyList = self::getFormKeysStartingWith($data, 'evalform_event_id_');
+      $value = self::extractIdFromFormKey($formKeyList[0], 'evalform_event_id_');
       $type = 'Integer';
     }
     elseif ($columnName == 'template') {
@@ -112,27 +149,33 @@ class CRM_Events_DrupalWebformSubmission {
       $type = 'Integer';
     }
     else {
+      // TODO throw error? or just log?
       $value = '';
       $type = 'null';
     }
 
-    // process n.v.t. answer
+    // process answer "niet van toepassing"
     if ($value == 'x' || !$value) {
       $value = '';
-      $type = 'Timestamp';
+      $type = 'Timestamp'; // unorthodox way to insert a NULL value
     }
 
     return [$value, $type];
   }
 
-  private static function extractIdFromFormKey($data, $keyStartsWith) {
+  private static function extractIdFromFormKey($formKey, $prefix) {
+    return substr($formKey, strlen($prefix));
+  }
+
+  private static function getFormKeysStartingWith($data, $keyStartsWith) {
+    $keys = [];
+
     foreach ($data as $k => $v) {
       if (strpos($k, $keyStartsWith) === 0) {
-        return substr($k, strlen($keyStartsWith));
+        $keys[] = $k;
       }
     }
 
-    // not found
-    return '';
+    return $keys;
   }
 }
