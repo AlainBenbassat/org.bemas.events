@@ -2,11 +2,32 @@
 
 class CRM_Events_DrupalWebformSubmission {
   public static function process($nodeId, $submissionId, $data) {
-    // TODO we can test on template type via $data['evalform_type'][0] later
-    // there will be templates a, b, c, l1...
+    $templateType = $data['evalform_type'][0];
 
-    self::saveParticipantEventEvaluation($nodeId, $submissionId, $data);
-    self::saveParticipantTrainerEvaluation($nodeId, $submissionId, $data);
+    if ($templateType == 'l1') {
+      self::saveTrainerEventEvaluation($nodeId, $submissionId, $data);
+    }
+    else {
+      self::saveParticipantEventEvaluation($nodeId, $submissionId, $data);
+      self::saveParticipantTrainerEvaluation($nodeId, $submissionId, $data);
+    }
+  }
+
+  /**
+   * @param $submissionId
+   *
+   * Delete a survey webform submission from the dashboard tables
+   */
+  public static function delete($submissionId) {
+    $tables = ['civicrm_bemas_eval_participant_event', 'civicrm_bemas_eval_participant_trainer', 'civicrm_bemas_eval_trainer_event'];
+
+    $sqlParams = [
+      1 => [$submissionId, 'Integer'],
+    ];
+
+    foreach ($tables as $table) {
+      CRM_Core_DAO::executeQuery("delete from $table where sid = %1", $sqlParams);
+    }
   }
 
   private static function saveParticipantEventEvaluation($nodeId, $submissionId, $data) {
@@ -63,26 +84,45 @@ class CRM_Events_DrupalWebformSubmission {
       $sqlParams[3] = [self::extractIdFromFormKey($speakerFormKey, 'evalform_speaker_id_'), 'Integer'];
       $sqlParams[4] = self::getAnswerValueAndTypeFromSubmission('event_id', $nodeId, $submissionId, $data);
       $sqlParams[5] = self::getAnswerValueAndTypeFromSubmission('template', $nodeId, $submissionId, $data);
-
-      if ($data[$speakerFormKey]['a'] == 'x') {
-        $sqlParams[6] = ['', 'Timestamp']; // dirty hack for inserting NULL
-      }
-      else {
-        $sqlParams[6] = [$data[$speakerFormKey]['a'], 'Integer'];
-      }
-
-      if ($data[$speakerFormKey]['b'] == 'x') {
-        $sqlParams[7] = ['', 'Timestamp']; // dirty hack for inserting NULL
-      }
-      else {
-        $sqlParams[7] = [$data[$speakerFormKey]['b'], 'Integer'];
-      }
+      $sqlParams[6] = self::handleNullAndReturnArray($data[$speakerFormKey]['a'], 'Integer');
+      $sqlParams[7] = self::handleNullAndReturnArray($data[$speakerFormKey]['b'], 'Integer');
 
       CRM_Core_DAO::executeQuery($sql, $sqlParams);
     }
   }
 
+  private static function saveTrainerEventEvaluation($nodeId, $submissionId, $data) {
+    $sqlParams = [];
+    $columns = [
+      1 => 'nid',
+      2 => 'sid',
+      3 => 'event_id',
+      4 => 'template',
+      5 => 'algemene_tevredenheid',
+      6 => 'ontvangst',
+      7 => 'catering',
+      8 => 'locatie',
+      9 => 'cursusmateriaal',
+      10 => 'interactie',
+      11 => 'verwachting',
+    ];
+
+    foreach ($columns as $columnIndex => $columnName) {
+      $columnList[] = $columnName;
+      $columnIndexList[] = "%$columnIndex";
+
+      [$columnValue, $columnType] = self::getAnswerValueAndTypeFromSubmission($columnName, $nodeId, $submissionId, $data);
+      $sqlParams[$columnIndex] = [$columnValue, $columnType];
+    }
+
+    $sql = sprintf("insert into civicrm_bemas_eval_trainer_event (%s) values (%s)", implode(', ', $columnList), implode(', ', $columnIndexList));
+
+    CRM_Core_DAO::executeQuery($sql, $sqlParams);
+  }
+
   private static function getAnswerValueAndTypeFromSubmission($columnName, $nodeId, $submissionId, $data) {
+    $templateType = $data['evalform_type'][0];
+
     if ($columnName == 'nid') {
       $value = $nodeId;
       $type = 'Integer';
@@ -97,7 +137,7 @@ class CRM_Events_DrupalWebformSubmission {
       $type = 'Integer';
     }
     elseif ($columnName == 'template') {
-      $value = $data['evalform_type'][0];
+      $value = $templateType;
       $type = 'String';
     }
     elseif ($columnName == 'algemene_tevredenheid') {
@@ -109,11 +149,11 @@ class CRM_Events_DrupalWebformSubmission {
       $type = 'Integer';
     }
     elseif ($columnName == 'cursusmateriaal') {
-      $value = $data['evalform_q2a']['b'];
+      $value = $templateType == 'l1' ? $data['evalform_q2a']['d'] : $data['evalform_q2a']['b'];
       $type = 'Integer';
     }
     elseif ($columnName == 'interactie') {
-      $value = $data['evalform_q2a']['c'];
+      $value = $templateType == 'l1' ? $data['evalform_q2a']['e'] : $data['evalform_q2a']['c'];
       $type = 'Integer';
     }
     elseif ($columnName == 'kwaliteit') {
@@ -137,15 +177,15 @@ class CRM_Events_DrupalWebformSubmission {
       $type = 'Integer';
     }
     elseif ($columnName == 'ontvangst') {
-      $value = $data['evalform_q6a']['b'];
+      $value = $templateType == 'l1' ? $data['evalform_q2a']['a'] : $data['evalform_q6a']['b'];
       $type = 'Integer';
     }
     elseif ($columnName == 'catering') {
-      $value = $data['evalform_q6a']['c'];
+      $value = $templateType == 'l1' ? $data['evalform_q2a']['b'] : $data['evalform_q6a']['c'];
       $type = 'Integer';
     }
     elseif ($columnName == 'locatie') {
-      $value = $data['evalform_q6a']['d'];
+      $value = $templateType == 'l1' ? $data['evalform_q2a']['c'] : $data['evalform_q6a']['d'];
       $type = 'Integer';
     }
     else {
@@ -154,8 +194,12 @@ class CRM_Events_DrupalWebformSubmission {
       $type = 'null';
     }
 
+    return self::handleNullAndReturnArray($value, $type);
+  }
+
+  private static function handleNullAndReturnArray($value, $type) {
     // process answer "niet van toepassing"
-    if ($value == 'x' || !$value) {
+    if ($type == 'Integer' && ($value == 'x' || !$value)) {
       $value = '';
       $type = 'Timestamp'; // unorthodox way to insert a NULL value
     }

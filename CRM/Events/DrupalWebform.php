@@ -12,10 +12,28 @@ class CRM_Events_DrupalWebform {
       return;
     }
 
-    $nodeTemplate = $this->getTemplateNode();
+    $this->createParticipantEventSurvey();
+    $this->createTrainerEventSurvey();
+  }
+
+  private function createParticipantEventSurvey() {
+    $nodeTemplate = $this->getTemplateNodeByTitle($this->getParticipantTemplateTitle());
     $eventSurvey = clone $nodeTemplate;
     $this->wipeNodeFields($eventSurvey);
-    $this->setNewNodeValues($eventSurvey);
+    $this->setNodeTitle($eventSurvey, '');
+    $this->setNodeEventId($eventSurvey);
+    $this->setNodeSpeakers($eventSurvey);
+
+    $nid = $this->saveNode($eventSurvey, $nodeTemplate);
+  }
+
+  private function createTrainerEventSurvey() {
+    $nodeTemplate = $this->getTemplateNodeByTitle($this->getTrainerTemplateTitle());
+    $eventSurvey = clone $nodeTemplate;
+    $this->wipeNodeFields($eventSurvey);
+    $this->setNodeTitle($eventSurvey, 'Trainer ');
+    $this->setNodeEventId($eventSurvey);
+
     $nid = $this->saveNode($eventSurvey, $nodeTemplate);
   }
 
@@ -49,14 +67,20 @@ class CRM_Events_DrupalWebform {
     return $formKey;
   }
 
-  private function getTemplateTitle() {
+  private function getParticipantTemplateTitle() {
     $title = 'TEMPLATE ' . $this->templateType . ' - Evaluatie opleidingen ' . $this->language;
 
     return $title;
   }
 
-  private function getTemplateNode() {
-    $nodes = node_load_multiple(NULL, array("title" => $this->getTemplateTitle()));
+  private function getTrainerTemplateTitle() {
+    $title = 'TEMPLATE L1 - Evaluatie lesgever ' . $this->language;
+
+    return $title;
+  }
+
+  private function getTemplateNodeByTitle($title) {
+    $nodes = node_load_multiple(NULL, ['title' => $title]);
     $node = current($nodes);
 
     return $node;
@@ -74,22 +98,20 @@ class CRM_Events_DrupalWebform {
     $node->files = [];
   }
 
-  private function setNewNodeValues(&$node) {
-    $node->title = $this->eventTitle;
-    $this->setNewNodeEventId($node);
-    $this->setNewNodeSpeakers($node);
+  private function setNodeTitle(&$node, $prefix) {
+    $node->title = $prefix . $this->eventTitle;
   }
 
-  private function setNewNodeEventId(&$node) {
+  private function setNodeEventId(&$node) {
     for ($i = 1; $i <= count($node->webform['components']); $i++) {
-      if (substr($node->webform['components'][$i]['form_key'], -9) == '_event_id') {
+      if ($node->webform['components'][$i]['form_key'] == 'evalform_event_id') {
         $node->webform['components'][$i]['form_key'] = $this->getEventFormKey();
         $node->webform['components'][$i]['value'] = $this->eventId;
       }
     }
   }
 
-  private function setNewNodeSpeakers($node) {
+  private function setNodeSpeakers($node) {
     $numSpeakers = count($this->speakers);
     if ($numSpeakers == 0) {
       $this->removeSpeakerFields($node);
