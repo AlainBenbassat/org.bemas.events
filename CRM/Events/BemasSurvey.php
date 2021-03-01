@@ -23,8 +23,13 @@ class CRM_Events_BemasSurvey {
       $eventSurvey->templateType = $surveyType;
       $eventSurvey->language = $this->getEventLanguage($eventCode);
       $eventSurvey->speakers = $this->getEventSpeakers($eventId);
-      $eventSurvey->create();
+      $surveyNids = $eventSurvey->create();
     }
+    else {
+      $surveyNids = FALSE;
+    }
+
+    return $surveyNids;
   }
 
   private function getEventCode($title) {

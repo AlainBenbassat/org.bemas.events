@@ -9,11 +9,14 @@ class CRM_Events_DrupalWebform {
 
   public function create() {
     if ($this->hasEventSurvey()) {
-      return;
+      return FALSE;
     }
 
-    $this->createParticipantEventSurvey();
-    $this->createTrainerEventSurvey();
+    $surveyNids = [];
+    $surveyNids['participant_survey_nid'] = $this->createParticipantEventSurvey();
+    $surveyNids['trainer_survey_nid'] = $this->createTrainerEventSurvey();
+
+    return $surveyNids;
   }
 
   private function createParticipantEventSurvey() {
@@ -25,6 +28,7 @@ class CRM_Events_DrupalWebform {
     $this->setNodeSpeakers($eventSurvey);
 
     $nid = $this->saveNode($eventSurvey, $nodeTemplate);
+    return $nid;
   }
 
   private function createTrainerEventSurvey() {
@@ -35,6 +39,7 @@ class CRM_Events_DrupalWebform {
     $this->setNodeEventId($eventSurvey);
 
     $nid = $this->saveNode($eventSurvey, $nodeTemplate);
+    return $nid;
   }
 
   private function hasEventSurvey() {

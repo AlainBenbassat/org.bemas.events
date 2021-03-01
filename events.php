@@ -3,6 +3,17 @@
 require_once 'events.civix.php';
 use CRM_Events_ExtensionUtil as E;
 
+function events_civicrm_custom($op, $groupID, $entityID, &$params) {
+  if ($op == 'create' || $op == 'edit') {
+    try {
+      CRM_Events_BemasEvent::processHookCustom($groupID, $entityID, $params);
+    }
+    catch (Exception $e) {
+      CRM_Core_Session::setStatus($e->getMessage(), ts('Error'), 'error');
+    }
+  }
+}
+
 function events_civicrm_buildForm($formName, &$form) {
   global $language;
 
