@@ -80,8 +80,8 @@ function events_civicrm_tokens(&$tokens) {
 }
 
 function events_civicrm_tokenValues(&$values, $cids, $job = null, $tokens = [], $context = null) {
-  if ($eventId = CRM_Utils_Array::value('event.event_id', $values)) {
-    $values['event.bemas_evaluation_participant'] = 'test ' . $values['event.event_id'];
+  if ($eventId = CRM_Utils_Array::value('event', $values)) {
+    $values['event.bemas_evaluation_participant'] = 'test ' . print_r($values['event'], TRUE);
   }
 }
 
