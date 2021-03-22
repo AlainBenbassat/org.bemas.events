@@ -105,7 +105,7 @@ class CRM_Events_BemasSurvey {
       where
         e.id = $eventId
       and
-        p.role_id in (4, 6)
+        (p.role_id like '%4%' or p.role_id like '%6%')
     ";
     $dao = CRM_Core_DAO::executeQuery($sql);
     while ($dao->fetch()) {
