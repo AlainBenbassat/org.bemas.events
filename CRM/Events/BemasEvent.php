@@ -25,11 +25,9 @@ class CRM_Events_BemasEvent {
 
   private static function shouldCreateSurvey($eventId) {
     if (self::hasCreateSurveyFlag($eventId) && self::hasEmptySurveyLinks($eventId)) {
-      CRM_Core_Session::setStatus('create');
       return TRUE;
     }
     else {
-      CRM_Core_Session::setStatus('do not create');
       return FALSE;
     }
   }
@@ -71,18 +69,21 @@ class CRM_Events_BemasEvent {
   }
 
   public static function addSurveyLinks($eventId, $surveyNids) {
-    CRM_Core_Session::setStatus(print_r($surveyNids, TRUE));
     // participant
-    civicrm_api3('CustomValue', 'create', [
-      'entity_id' => $eventId,
-      'custom_155' => self::getUrlFromNid($surveyNids['participant_survey_nid']),
-    ]);
+    if (!empty($surveyNids['participant_survey_nid'])) {
+      civicrm_api3('CustomValue', 'create', [
+        'entity_id' => $eventId,
+        'custom_155' => self::getUrlFromNid($surveyNids['participant_survey_nid']),
+      ]);
+    }
 
     // trainer
-    civicrm_api3('CustomValue', 'create', [
-      'entity_id' => $eventId,
-      'custom_156' => self::getUrlFromNid($surveyNids['trainer_survey_nid']),
-    ]);
+    if (!empty($surveyNids['trainer_survey_nid'])) {
+      civicrm_api3('CustomValue', 'create', [
+        'entity_id' => $eventId,
+        'custom_156' => self::getUrlFromNid($surveyNids['trainer_survey_nid']),
+      ]);
+    }
   }
 
   private static function getUrlFromNid($nid) {

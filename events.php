@@ -72,17 +72,22 @@ function events_civicrm_buildForm($formName, &$form) {
 }
 
 function events_civicrm_tokens(&$tokens) {
+  /*
   $tokens['event'] = [
     'event.bemas_evaluation_participant' => 'BEMAS url evaluatieformulier deelnemer',
     'event.bemas_evaluation_trainer' => 'BEMAS url evaluatieformulier trainer',
     'event.bemas_evaluation_participant_5_star' => 'BEMAS 5-star deelnemer'
   ];
+  */
 }
 
 function events_civicrm_tokenValues(&$values, $cids, $job = null, $tokens = [], $context = null) {
+  /*
+  DOES NOT WORK!
   if ($eventId = CRM_Utils_Array::value('event', $values)) {
     $values['event.bemas_evaluation_participant'] = 'test ' . print_r($values['event'], TRUE);
   }
+  */
 }
 
 

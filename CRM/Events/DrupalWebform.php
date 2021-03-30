@@ -14,7 +14,9 @@ class CRM_Events_DrupalWebform {
 
     $surveyNids = [];
     $surveyNids['participant_survey_nid'] = $this->createParticipantEventSurvey();
-    $surveyNids['trainer_survey_nid'] = $this->createTrainerEventSurvey();
+    if ($this->templateType == 'A') {
+      $surveyNids['trainer_survey_nid'] = $this->createTrainerEventSurvey();
+    }
 
     return $surveyNids;
   }
@@ -73,7 +75,15 @@ class CRM_Events_DrupalWebform {
   }
 
   private function getParticipantTemplateTitle() {
-    $title = 'TEMPLATE ' . $this->templateType . ' - Evaluatie opleidingen ' . $this->language;
+    if ($this->templateType == 'A') {
+      $title = 'TEMPLATE ' . $this->templateType . ' - Evaluatie opleidingen ' . $this->language;
+    }
+    elseif ($this->templateType == 'B') {
+      throw new Exception(('Templage B is not implemented yet'));
+    }
+    elseif ($this->templateType == 'C') {
+      $title = 'TEMPLATE ' . $this->templateType . ' - Evaluatie webinars en studiesessies ' . $this->language;
+    }
 
     return $title;
   }
