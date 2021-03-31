@@ -40,7 +40,7 @@ abstract class CRM_Events_DrupalWebformProcessor {
 
   public function handleNullAndReturnArray($value, $type) {
     // process answer "niet van toepassing"
-    if ($type == 'Integer' && ($value == 'x' || $value == '')) {
+    if ($type == 'Integer' && ($value === 'x' || $value === '')) {
       $value = '';
       $type = 'Timestamp'; // unorthodox way to insert a NULL value
     }
