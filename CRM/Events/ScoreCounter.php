@@ -5,7 +5,7 @@ class CRM_Events_ScoreCounter {
   public $numEntries = 0;
 
   public function add($score) {
-    if (is_numeric($score) && $score > 0 && $score <= 100) {
+    if (is_numeric($score) && $score >= 0 && $score <= 100) {
       $this->score += $score;
       $this->numEntries++;
     }
