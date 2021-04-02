@@ -1,7 +1,7 @@
 <?php
 
 class CRM_Events_DrupalWebformProcessorL1 extends CRM_Events_DrupalWebformProcessor {
-  protected function process($nodeId, $submissionId, $data) {
+  public function process($nodeId, $submissionId, $data) {
     $this->saveTrainerEventEvaluation($nodeId, $submissionId, $data);
   }
 
