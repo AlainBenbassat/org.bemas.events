@@ -87,9 +87,11 @@ class CRM_Events_BemasEvent {
   }
 
   private static function getUrlFromNid($nid) {
+    global $base_url;
+
     $lang = self::getWebformLang($nid);
     $urlAlias = drupal_get_path_alias('node/' . $nid, $lang);
-    $url = "$lang/$urlAlias";
+    $url = "$base_url/$lang/$urlAlias";
     return '<a href="' . $url . '">' . $url . '</a>';
   }
 
