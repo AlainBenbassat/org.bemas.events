@@ -87,7 +87,41 @@ class CRM_Events_BemasEvent {
   }
 
   private static function getUrlFromNid($nid) {
-    $url = url('node/' . $nid, ['absolute' => FALSE]);
+    $lang = self::getWebformLang($nid);
+    $urlAlias = drupal_get_path_alias('node/' . $nid);
+    $url = "$lang/$urlAlias";
     return '<a href="' . $url . '">' . $url . '</a>';
+  }
+
+  private static function getWebformLang($nid) {
+    $node = node_load($nid);
+    if ($node) {
+      $titleParts = explode(' - ', $node->title);
+      $lang = self::getLangFromCourseCode($titleParts[0]);
+    }
+    else {
+      $lang = 'nl';
+    }
+
+    return $lang;
+  }
+
+  private static function getLangFromCourseCode($courseCode) {
+    $lastLetter = substr($courseCode, -1);
+
+    if ($lastLetter == 'V') {
+      return 'nl';
+    }
+
+    if ($lastLetter == 'W') {
+      return 'fr';
+    }
+
+    if ($lastLetter == 'N') {
+      return 'en';
+    }
+
+    // default
+    return 'nl';
   }
 }
