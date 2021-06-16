@@ -59,27 +59,27 @@ class CRM_Events_DrupalWebformProcessorL1 extends CRM_Events_DrupalWebformProces
       $type = 'Integer';
     }
     elseif ($columnName == 'ontvangst') {
-      $value = $data['evalform_q2a']['a'];
+      $value = $data['evalform_q2a']['a'] ?? 'x';
       $type = 'Integer';
     }
     elseif ($columnName == 'catering') {
-      $value = $data['evalform_q2a']['b'];
+      $value = $data['evalform_q2a']['b'] ?? 'x';
       $type = 'Integer';
     }
     elseif ($columnName == 'locatie') {
-      $value = $data['evalform_q2a']['c'];
+      $value = $data['evalform_q2a']['c'] ?? 'x';
       $type = 'Integer';
     }
     elseif ($columnName == 'cursusmateriaal') {
-      $value = $data['evalform_q2a']['d'];
+      $value = $data['evalform_q2a']['d'] ?? 'x';
       $type = 'Integer';
     }
     elseif ($columnName == 'interactie') {
-      $value = $data['evalform_q2a']['e'];
+      $value = $data['evalform_q2a']['e'] ?? 'x';
       $type = 'Integer';
     }
     elseif ($columnName == 'verwachting') {
-      $value = $data['evalform_q2a']['f'];
+      $value = $data['evalform_q2a']['f'] ?? 'x';
       $type = 'Integer';
     }
     else {

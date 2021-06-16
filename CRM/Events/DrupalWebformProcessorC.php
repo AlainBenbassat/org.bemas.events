@@ -111,19 +111,19 @@ class CRM_Events_DrupalWebformProcessorC extends CRM_Events_DrupalWebformProcess
       $type = 'Integer';
     }
     elseif ($columnName == 'administratief_proces') {
-      $value = $data['evalform_q6a']['a'];
+      $value = $data['evalform_q6a']['a'] ?? 'x';
       $type = 'Integer';
     }
     elseif ($columnName == 'ontvangst') {
-      $value = $data['evalform_q6a']['b'];
+      $value = $data['evalform_q6a']['b'] ?? 'x';
       $type = 'Integer';
     }
     elseif ($columnName == 'catering') {
-      $value = $data['evalform_q6a']['c'];
+      $value = $data['evalform_q6a']['c'] ?? 'x';
       $type = 'Integer';
     }
     elseif ($columnName == 'locatie') {
-      $value = $data['evalform_q6a']['d'];
+      $value = $data['evalform_q6a']['d'] ?? 'x';
       $type = 'Integer';
     }
     else {

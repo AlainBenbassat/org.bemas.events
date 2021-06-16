@@ -58,47 +58,47 @@ class CRM_Events_DrupalWebformProcessorA extends CRM_Events_DrupalWebformProcess
       $type = 'Integer';
     }
     elseif ($columnName == 'invulling') {
-      $value = $data['evalform_q2a']['a'];
+      $value = $data['evalform_q2a']['a'] ?? 'x';
       $type = 'Integer';
     }
     elseif ($columnName == 'cursusmateriaal') {
-      $value = $data['evalform_q2a']['b'];
+      $value = $data['evalform_q2a']['b'] ?? 'x';
       $type = 'Integer';
     }
     elseif ($columnName == 'interactie') {
-      $value = $data['evalform_q2a']['c'];
+      $value = $data['evalform_q2a']['c'] ?? 'x';
       $type = 'Integer';
     }
     elseif ($columnName == 'kwaliteit') {
-      $value = $data['evalform_q2a']['d'];
+      $value = $data['evalform_q2a']['d'] ?? 'x';
       $type = 'Integer';
     }
     elseif ($columnName == 'bijgeleerd') {
-      $value = $data['evalform_q2a']['e'];
+      $value = $data['evalform_q2a']['e'] ?? 'x';
       $type = 'Integer';
     }
     elseif ($columnName == 'verwachting') {
-      $value = $data['evalform_q2a']['f'];
+      $value = $data['evalform_q2a']['f'] ?? 'x';
       $type = 'Integer';
     }
     elseif ($columnName == 'relevantie') {
-      $value = $data['evalform_q2a']['g'];
+      $value = $data['evalform_q2a']['g'] ?? 'x';
       $type = 'Integer';
     }
     elseif ($columnName == 'administratief_proces') {
-      $value = $data['evalform_q6a']['a'];
+      $value = $data['evalform_q6a']['a'] ?? 'x';
       $type = 'Integer';
     }
     elseif ($columnName == 'ontvangst') {
-      $value = $data['evalform_q6a']['b'];
+      $value = $data['evalform_q6a']['b'] ?? 'x';
       $type = 'Integer';
     }
     elseif ($columnName == 'catering') {
-      $value = $data['evalform_q6a']['c'];
+      $value = $data['evalform_q6a']['c'] ?? 'x';
       $type = 'Integer';
     }
     elseif ($columnName == 'locatie') {
-      $value = $data['evalform_q6a']['d'];
+      $value = $data['evalform_q6a']['d'] ?? 'x';
       $type = 'Integer';
     }
     else {
