@@ -6,6 +6,7 @@ class CRM_Events_DrupalWebform {
   public $templateType = '';
   public $language = '';
   public $speakers = [];
+  public $modules = [];
 
   public function create() {
     if ($this->hasEventSurvey()) {
@@ -28,6 +29,10 @@ class CRM_Events_DrupalWebform {
     $this->setNodeTitle($eventSurvey, '');
     $this->setNodeEventId($eventSurvey);
     $this->setNodeSpeakers($eventSurvey);
+
+    if ($this->templateType == 'B') {
+      $this->setNodeModules($eventSurvey);
+    }
 
     $nid = $this->saveNode($eventSurvey, $nodeTemplate);
     return $nid;
@@ -79,7 +84,7 @@ class CRM_Events_DrupalWebform {
       $title = 'TEMPLATE ' . $this->templateType . ' - Evaluatie opleidingen ' . $this->language;
     }
     elseif ($this->templateType == 'B') {
-      throw new Exception(('Templage B is not implemented yet'));
+      $title = 'TEMPLATE ' . $this->templateType . ' - Evaluatie opleidingsreeks ' . $this->language;
     }
     elseif ($this->templateType == 'C') {
       $title = 'TEMPLATE ' . $this->templateType . ' - Evaluatie webinars en studiesessies ' . $this->language;
@@ -197,6 +202,26 @@ class CRM_Events_DrupalWebform {
     $newName = substr($newName, 0, $letterIndex) . chr(97 + $n) . '. ' . substr($newName, $letterIndex + 3);
 
     return $newName;
+  }
+
+  private function setNodeModules(&$node) {
+    for ($i = 1; $i <= count($node->webform['components']); $i++) {
+      if ($node->webform['components'][$i]['form_key'] == 'evalform_modules') {
+        $node->webform['components'][$i]['extra'] = $this->modulesToDrupalSelect($node->webform['components'][$i]['extra']);
+        break;
+      }
+    }
+  }
+
+  private function modulesToDrupalSelect($extra) {
+    $list = '';
+    foreach ($this->modules as $k => $v) {
+      $list .= "$k|$v\n";
+    }
+
+    $extra['items'] = $list;
+
+    return $extra;
   }
 
   private function saveNode($node, $nodeTemplate) {

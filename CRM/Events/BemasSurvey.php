@@ -23,6 +23,7 @@ class CRM_Events_BemasSurvey {
       $eventSurvey->templateType = $surveyType;
       $eventSurvey->language = $this->getEventLanguage($eventCode);
       $eventSurvey->speakers = $this->getEventSpeakers($eventId);
+      $eventSurvey->modules = $this->getEventModules($eventId);
       $surveyNids = $eventSurvey->create();
     }
     else {
@@ -113,6 +114,41 @@ class CRM_Events_BemasSurvey {
     }
 
     return $speakers;
+  }
+
+  private function getEventModules($eventId) {
+    $modules = [];
+
+    $priceSetId = $this->getEventPriceSetId($eventId);
+    if ($priceSetId) {
+      $priceFieldId = $this->getPriceFieldIdOfModules($priceSetId);
+      if ($priceFieldId) {
+        $modules = $this->getPriceFieldValues($priceFieldId);
+      }
+    }
+
+    return $modules;
+  }
+
+  private function getEventPriceSetId($eventId) {
+    $sql = "select price_set_id from civicrm_price_set_entity where entity_id = $eventId and entity_table = 'civicrm_event'";
+    return CRM_Core_DAO::singleValueQuery($sql);
+  }
+
+  private function getPriceFieldIdOfModules($priceSetId) {
+    $sql = "select min(id) from civicrm_price_field where price_set_id  = $priceSetId and name like 'modules%' and is_active = 1";
+    return CRM_Core_DAO::singleValueQuery($sql);
+  }
+
+  private function getPriceFieldValues($priceFieldId) {
+    $modules = [];
+    $sql = "select id, label module_name from civicrm_price_field_value where price_field_id = $priceFieldId order by 2";
+    $dao = CRM_Core_DAO::executeQuery($sql);
+    while ($dao->fetch()) {
+      $modules[$dao->id] = $dao->module_name;
+    }
+
+    return $modules;
   }
 
   private function getUpcomingEvents() {
