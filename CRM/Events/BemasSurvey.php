@@ -4,10 +4,12 @@ class CRM_Events_BemasSurvey {
   private $offsetInDays = 7;
 
   public function createForAllEvents() {
+    /*
     $eventIds = $this->getUpcomingEvents();
     foreach ($eventIds as $eventId) {
       $this->createForEvent($eventId);
     }
+    */
   }
 
   public function createForEvent($eventId) {

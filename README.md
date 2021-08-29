@@ -1,44 +1,73 @@
 # org.bemas.events
 
-![Screenshot](/images/screenshot.png)
+## Templates
 
-(*FIXME: In one or two paragraphs, describe what the extension does and why one would download it. *)
+Er zijn 3 templates voor eventementen:
 
-The extension is licensed under [AGPL-3.0](LICENSE.txt).
+* template A
+* template B
+* template C
 
-## Requirements
+Er is 1 template voor lesgevers:
 
-* PHP v5.4+
-* CiviCRM (*FIXME: Version number*)
+* template l1
 
-## Installation (Web UI)
+Elke template is een Drupal webform, en elke template bestaat in NL, FR en EN.
 
-This extension has not yet been published for installation via the web UI.
+## Aanmaak evaluatieformulier
 
-## Installation (CLI, Zip)
+Voor een specifiek evenement kan je een evaluatieformulier aanmaken door op de fiche van het evenement "Evaluatieformulier aanmaken?" op "ja" te zetten.
 
-Sysadmins and developers may download the `.zip` file for this extension and
-install it with the command-line tool [cv](https://github.com/civicrm/cv).
+Sla dan het evenement op. Het evaluatieformulier wordt dan automatisch aangemaakt en de hyperlink naar het formulier vind je in het vak "Formulier voor deelnemers".
 
-```bash
-cd <extension-dir>
-cv dl org.bemas.events@https://github.com/FIXME/org.bemas.events/archive/master.zip
-```
+Afhankelijk van het type evenement is er ook een evaluatieformulier voor lesgevers.
 
-## Installation (CLI, Git)
+## Verwerking evalutieformulier
 
-Sysadmins and developers may clone the [Git](https://en.wikipedia.org/wiki/Git) repo for this extension and
-install it with the command-line tool [cv](https://github.com/civicrm/cv).
+Een custom Drupal module, bemas_survey, vangt een submit van een evaluatieformulier op, en delegeert dan de verwerking aan een deze extensie.
 
-```bash
-git clone https://github.com/FIXME/org.bemas.events.git
-cv en events
-```
+## Dashboards
 
-## Usage
+De dashboards zitten in de extensie org.bemas.evalformdashboard.
 
-(* FIXME: Where would a new user navigate to get started? What changes would they see? *)
+## Technisch
 
-## Known Issues
+### Hook events_civicrm_custom()
 
-(* FIXME *)
+De hook events_civicrm_custom() in events.php check of een event wordt aangemaakt of bewerkt.
+Het delegeert dan aan ```CRM_Events_BemasEvent::processHookCustom()```.
+
+### CRM_Events_BemasEvent::processHookCustom()
+
+```CRM_Events_BemasEvent::processHookCustom()``` check of aan alle voorwaarden voldaan is om de evaluatieformulieren aan te maken. Het delegeert de aanmaak aan de klasse ```CRM_Events_BemasSurvey()```.
+
+### Klasse CRM_Events_BemasSurvey
+
+De klasse heeft een method ```createForEvent($eventId)```.
+
+Deze klasse zoekt alles op over het evenement (titel, type evaluatieformulier, lesgevers...) en delegeert de aanmaak van de Drupal webform aan de klasse ```CRM_Events_DrupalWebform```
+
+### Klasse CRM_Events_DrupalWebform
+
+De klasse CRM_Events_DrupalWebform cloont de juiste template en past de webform aan het evenement aan: titel invullen, de lesgevers, de event id...
+
+### Verwerking van een evaluatie: Drupal custom module bemas_survey
+
+Wanneer een deelnemer een evaluatieformulier invult, wordt de hook ```webform_submission_insert()``` opgevangen in de custom Drupal module ```bemas_survey```.
+
+Indien aan de voorwaarden voldaan is, zal de module de vragen en antwoorden delegeren aan ```CRM_Events_DrupalWebformSubmission::process```
+
+### Klasse CRM_Events_DrupalWebformSubmission: factory voor verwerking
+
+De method ```CRM_Events_DrupalWebformSubmission::process()``` checkt welk type formulier gesubmit werd, en instantieert dan een object van een van volgende klassen:
+
+  * CRM_Events_DrupalWebformProcessorA
+  * CRM_Events_DrupalWebformProcessorB
+  * CRM_Events_DrupalWebformProcessorC
+  * CRM_Events_DrupalWebformProcessorL1
+
+Die klassen hebben een ```process()``` method.
+
+
+
+

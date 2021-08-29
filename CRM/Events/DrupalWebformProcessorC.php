@@ -6,7 +6,10 @@ class CRM_Events_DrupalWebformProcessorC extends CRM_Events_DrupalWebformProcess
   public function process($nodeId, $submissionId, $data) {
     $this->preProcessTrainerFields($data);
     $this->saveParticipantEventEvaluation($nodeId, $submissionId, $data);
-    $this->saveParticipantTrainerEvaluation($nodeId, $submissionId, $data);
+
+    $expertise = 'h';
+    $didactischeVaardigheden = 'i';
+    $this->saveParticipantTrainerEvaluation($nodeId, $submissionId, $data, $expertise, $didactischeVaardigheden);
   }
 
   private function preProcessTrainerFields($data) {
@@ -28,33 +31,6 @@ class CRM_Events_DrupalWebformProcessorC extends CRM_Events_DrupalWebformProcess
       $this->trainerFields['bijgeleerd']->add($data[$speakerFormKey]['e']);
       $this->trainerFields['verwachting']->add($data[$speakerFormKey]['f']);
       $this->trainerFields['relevantie']->add($data[$speakerFormKey]['g']);
-    }
-  }
-
-  private function saveParticipantTrainerEvaluation($nodeId, $submissionId, $data) {
-    $speakerFormKeyList = $this->getFormKeysStartingWith($data, 'evalform_speaker_id_');
-    foreach ($speakerFormKeyList as $speakerFormKey) {
-      $sqlParams = [];
-      $sql = "
-        insert into
-          civicrm_bemas_eval_participant_trainer
-        (
-          nid, sid, contact_id, event_id, template, expertise, didactische_vaardigheden
-        )
-        values
-        (
-          %1, %2, %3, %4, %5, %6, %7
-        )
-      ";
-      $sqlParams[1] = $this->getAnswerValueAndTypeFromSubmission('nid', $nodeId, $submissionId, $data);
-      $sqlParams[2] = $this->getAnswerValueAndTypeFromSubmission('sid', $nodeId, $submissionId, $data);
-      $sqlParams[3] = [$this->extractIdFromFormKey($speakerFormKey, 'evalform_speaker_id_'), 'Integer'];
-      $sqlParams[4] = $this->getAnswerValueAndTypeFromSubmission('event_id', $nodeId, $submissionId, $data);
-      $sqlParams[5] = $this->getAnswerValueAndTypeFromSubmission('template', $nodeId, $submissionId, $data);
-      $sqlParams[6] = $this->handleNullAndReturnArray($data[$speakerFormKey]['h'], 'Integer');
-      $sqlParams[7] = $this->handleNullAndReturnArray($data[$speakerFormKey]['i'], 'Integer');
-
-      CRM_Core_DAO::executeQuery($sql, $sqlParams);
     }
   }
 

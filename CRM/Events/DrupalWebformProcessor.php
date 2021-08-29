@@ -10,19 +10,20 @@ abstract class CRM_Events_DrupalWebformProcessor {
       1 => 'nid',
       2 => 'sid',
       3 => 'event_id',
-      4 => 'template',
-      5 => 'algemene_tevredenheid',
-      6 => 'invulling',
-      7 => 'cursusmateriaal',
-      8 => 'interactie',
-      9 => 'kwaliteit',
-      10 => 'bijgeleerd',
-      11 => 'verwachting',
-      12 => 'relevantie',
-      13 => 'administratief_proces',
-      14 => 'ontvangst',
-      15 => 'catering',
-      16 => 'locatie',
+      4 => 'module',
+      5 => 'template',
+      6 => 'algemene_tevredenheid',
+      7 => 'invulling',
+      8 => 'cursusmateriaal',
+      9 => 'interactie',
+      10 => 'kwaliteit',
+      11 => 'bijgeleerd',
+      12 => 'verwachting',
+      13 => 'relevantie',
+      14 => 'administratief_proces',
+      15 => 'ontvangst',
+      16 => 'catering',
+      17 => 'locatie',
     ];
 
     foreach ($columns as $columnIndex => $columnName) {
@@ -38,9 +39,40 @@ abstract class CRM_Events_DrupalWebformProcessor {
     CRM_Core_DAO::executeQuery($sql, $sqlParams);
   }
 
+  public function saveParticipantTrainerEvaluation($nodeId, $submissionId, $data, $expertse, $didactischeVaardigheden) {
+    $speakerFormKeyList = $this->getFormKeysStartingWith($data, 'evalform_speaker_id_');
+    foreach ($speakerFormKeyList as $speakerFormKey) {
+      $sqlParams = [];
+      $sql = "
+        insert into
+          civicrm_bemas_eval_participant_trainer
+        (
+          nid, sid, contact_id, event_id, template, expertise, didactische_vaardigheden
+        )
+        values
+        (
+          %1, %2, %3, %4, %5, %6, %7
+        )
+      ";
+      $sqlParams[1] = $this->getAnswerValueAndTypeFromSubmission('nid', $nodeId, $submissionId, $data);
+      $sqlParams[2] = $this->getAnswerValueAndTypeFromSubmission('sid', $nodeId, $submissionId, $data);
+      $sqlParams[3] = [$this->extractIdFromFormKey($speakerFormKey, 'evalform_speaker_id_'), 'Integer'];
+      $sqlParams[4] = $this->getAnswerValueAndTypeFromSubmission('event_id', $nodeId, $submissionId, $data);
+      $sqlParams[5] = $this->getAnswerValueAndTypeFromSubmission('template', $nodeId, $submissionId, $data);
+      $sqlParams[6] = $this->handleNullAndReturnArray($data[$speakerFormKey][$expertse], 'Integer');
+      $sqlParams[7] = $this->handleNullAndReturnArray($data[$speakerFormKey][$didactischeVaardigheden], 'Integer');
+
+      CRM_Core_DAO::executeQuery($sql, $sqlParams);
+    }
+  }
+
   public function handleNullAndReturnArray($value, $type) {
     // process answer "niet van toepassing"
     if ($type == 'Integer' && ($value === 'x' || $value === '')) {
+      $value = '';
+      $type = 'Timestamp'; // unorthodox way to insert a NULL value
+    }
+    elseif ($type == 'null') {
       $value = '';
       $type = 'Timestamp'; // unorthodox way to insert a NULL value
     }

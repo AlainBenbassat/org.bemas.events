@@ -15,7 +15,7 @@ class CRM_Events_DrupalWebform {
 
     $surveyNids = [];
     $surveyNids['participant_survey_nid'] = $this->createParticipantEventSurvey();
-    if ($this->templateType == 'A') {
+    if ($this->templateType == 'A' || $this->templateType == 'B') {
       $surveyNids['trainer_survey_nid'] = $this->createTrainerEventSurvey();
     }
 
@@ -32,6 +32,7 @@ class CRM_Events_DrupalWebform {
 
     if ($this->templateType == 'B') {
       $this->setNodeModules($eventSurvey);
+      $this->setNodeSpeakersList($eventSurvey);
     }
 
     $nid = $this->saveNode($eventSurvey, $nodeTemplate);
@@ -123,11 +124,10 @@ class CRM_Events_DrupalWebform {
   }
 
   private function setNodeEventId(&$node) {
-    for ($i = 1; $i <= count($node->webform['components']); $i++) {
-      if ($node->webform['components'][$i]['form_key'] == 'evalform_event_id') {
-        $node->webform['components'][$i]['form_key'] = $this->getEventFormKey();
-        $node->webform['components'][$i]['value'] = $this->eventId;
-      }
+    $i = $this->getWebformIdByformKey($node, 'evalform_event_id');
+    if ($i) {
+      $node->webform['components'][$i]['form_key'] = $this->getEventFormKey();
+      $node->webform['components'][$i]['value'] = $this->eventId;
     }
   }
 
@@ -142,20 +142,12 @@ class CRM_Events_DrupalWebform {
   }
 
   private function removeSpeakerFields(&$node) {
-    $i = $this->getSpeakerComponentIndex($node->webform['components']);
+    $i = $this->getWebformIdByformKey($node, 'evalform_speaker_a');
     unset($node->webform['components'][$i]);
   }
 
-  private function getSpeakerComponentIndex($arr) {
-    for ($i = 1; $i <= count($arr); $i++) {
-      if (substr($arr[$i]['form_key'], -10) == '_speaker_a') {
-        return $i;
-      }
-    }
-  }
-
   private function addSpeakerFields(&$node) {
-    $speakerIndex = $this->getSpeakerComponentIndex($node->webform['components']);
+    $speakerIndex = $this->getWebformIdByformKey($node, 'evalform_speaker_a');
 
     $speakerComponents = [];
     $n = 0;
@@ -205,18 +197,81 @@ class CRM_Events_DrupalWebform {
   }
 
   private function setNodeModules(&$node) {
+    $i = $this->getWebformIdByformKey($node, 'evalform_modules');
+    if ($i) {
+      $node->webform['components'][$i]['extra'] = $this->modulesToDrupalSelect($node->webform['components'][$i]['extra']);
+    }
+  }
+
+  private function setNodeSpeakersList(&$node) {
+    $i = $this->getWebformIdByformKey($node, 'evalform_speakers');
+    if ($i) {
+      $node->webform['components'][$i]['extra'] = $this->speakersToDrupalSelect($node->webform['components'][$i]['extra']);
+      $this->addSpeakerConditionals($node, $i);
+    }
+  }
+
+  private function addSpeakerConditionals(&$node, $speakerListId) {
+    // for each speaker: create a condition to show the speaker eval block when a speaker is selected
+    $conditions = [];
+
+    $i = 0;
+    foreach ($this->speakers as $speakerId => $speakerName) {
+      $conditions[] = [
+        'rgid' => $i,
+        'andor' => NULL,
+        'weight' => $i,
+        'rules' => [
+            [
+            'rgid' => $i,
+            'source_type' => 'component',
+            'source' => $speakerListId,
+            'operator' => 'equal',
+            'value' => $speakerId,
+            ],
+        ],
+        'actions' => [
+          [
+            'rgid' => $i,
+            'target_type' => 'component',
+            'target' => $this->getWebformIdByformKey($node, "evalform_speaker_id_$speakerId"),
+            'invert' => '0',
+            'action' => 'show',
+          ],
+        ],
+      ];
+
+      $i++;
+    }
+
+    $node->webform['conditionals'] = $conditions;
+  }
+
+  private function getWebformIdByformKey($node, $formKey) {
     for ($i = 1; $i <= count($node->webform['components']); $i++) {
-      if ($node->webform['components'][$i]['form_key'] == 'evalform_modules') {
-        $node->webform['components'][$i]['extra'] = $this->modulesToDrupalSelect($node->webform['components'][$i]['extra']);
-        break;
+      if ($node->webform['components'][$i]['form_key'] == $formKey) {
+        return $i;
       }
     }
+
+    return 0;
   }
 
   private function modulesToDrupalSelect($extra) {
     $list = '';
     foreach ($this->modules as $k => $v) {
       $list .= "$k|$v\n";
+    }
+
+    $extra['items'] = $list;
+
+    return $extra;
+  }
+
+  private function speakersToDrupalSelect($extra) {
+    $list = '';
+    foreach ($this->speakers as $speakerId => $speakerName) {
+      $list .= "$speakerId|$speakerName\n";
     }
 
     $extra['items'] = $list;
