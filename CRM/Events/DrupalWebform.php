@@ -259,8 +259,8 @@ class CRM_Events_DrupalWebform {
 
   private function modulesToDrupalSelect($extra) {
     $list = '';
-    foreach ($this->modules as $k => $v) {
-      $list .= "$k|$v\n";
+    foreach ($this->modules as $module) {
+      $list .= "$module|$module\n";
     }
 
     $extra['items'] = $list;

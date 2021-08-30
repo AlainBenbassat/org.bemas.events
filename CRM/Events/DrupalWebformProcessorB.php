@@ -30,7 +30,7 @@ class CRM_Events_DrupalWebformProcessorB extends CRM_Events_DrupalWebformProcess
       $type = 'String';
     }
     elseif ($columnName == 'module') {
-      $value = $data['evalform_module'][0];
+      $value = $data['evalform_modules'][0];
       $type = 'String';
     }
     elseif ($columnName == 'algemene_tevredenheid') {
