@@ -46,6 +46,10 @@ class CRM_Events_DrupalWebform {
     $this->setNodeTitle($eventSurvey, 'Trainer ');
     $this->setNodeEventId($eventSurvey);
 
+    if ($this->templateType == 'B') {
+      $this->setNodeModules($eventSurvey);
+    }
+
     $nid = $this->saveNode($eventSurvey, $nodeTemplate);
     return $nid;
   }
@@ -95,7 +99,12 @@ class CRM_Events_DrupalWebform {
   }
 
   private function getTrainerTemplateTitle() {
-    $title = 'TEMPLATE L1 - Evaluatie lesgever ' . $this->language;
+    if ($this->templateType == 'A') {
+      $title = 'TEMPLATE L1 - Evaluatie lesgever ' . $this->language;
+    }
+    elseif ($this->templateType == 'B') {
+      $title = 'TEMPLATE L2 - Evaluatie lesgever ' . $this->language;
+    }
 
     return $title;
   }

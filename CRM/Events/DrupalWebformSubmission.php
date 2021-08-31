@@ -37,6 +37,9 @@ class CRM_Events_DrupalWebformSubmission {
       case 'L1':
         $obj = new CRM_Events_DrupalWebformProcessorL1();
         break;
+      case 'L2':
+        $obj = new CRM_Events_DrupalWebformProcessorL1(); // L1 and l2 are the same apart from "modules"
+        break;
       default:
         throw new Exception("Processing of template $templateType is not implemented");
     }

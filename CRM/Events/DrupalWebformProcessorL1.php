@@ -11,14 +11,15 @@ class CRM_Events_DrupalWebformProcessorL1 extends CRM_Events_DrupalWebformProces
       1 => 'nid',
       2 => 'sid',
       3 => 'event_id',
-      4 => 'template',
-      5 => 'algemene_tevredenheid',
-      6 => 'ontvangst',
-      7 => 'catering',
-      8 => 'locatie',
-      9 => 'cursusmateriaal',
-      10 => 'interactie',
-      11 => 'verwachting',
+      4 => 'module',
+      5 => 'template',
+      6 => 'algemene_tevredenheid',
+      7 => 'ontvangst',
+      8 => 'catering',
+      9 => 'locatie',
+      10 => 'cursusmateriaal',
+      11 => 'interactie',
+      12 => 'verwachting',
     ];
 
     foreach ($columns as $columnIndex => $columnName) {
@@ -52,6 +53,10 @@ class CRM_Events_DrupalWebformProcessorL1 extends CRM_Events_DrupalWebformProces
     }
     elseif ($columnName == 'template') {
       $value = $templateType;
+      $type = 'String';
+    }
+    elseif ($columnName == 'module') {
+      $value = $data['evalform_modules'][0];
       $type = 'String';
     }
     elseif ($columnName == 'algemene_tevredenheid') {
