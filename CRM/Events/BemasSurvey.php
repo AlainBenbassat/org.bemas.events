@@ -77,7 +77,7 @@ class CRM_Events_BemasSurvey {
       9	=> 'A', // Online opleiding
       4	=> 'A', // Opleiding
       5 => 'B', // Opleidingsreeks
-      1 => 'C', // Studiesessie
+      2 => 'C', // Seminarie
       18 => 'A', //	Toepassingstraject
       15 => 'C', // Webinar
     ];
