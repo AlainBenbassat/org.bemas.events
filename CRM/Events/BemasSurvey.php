@@ -80,6 +80,7 @@ class CRM_Events_BemasSurvey {
       2 => 'C', // Seminarie
       18 => 'A', //	Toepassingstraject
       15 => 'C', // Webinar
+      19 => 'C', // lerend netwerk
       20 => 'A', // Inhouse
     ];
 
